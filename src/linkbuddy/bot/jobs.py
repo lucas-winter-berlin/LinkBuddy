@@ -92,8 +92,8 @@ def schedule_jobs(application: Application) -> None:
     job_queue = application.job_queue
     if job_queue is None:
         logger.warning(
-            "Keine JobQueue verfügbar – installiere python-telegram-bot[job-queue]. "
-            "Der wöchentliche Export bleibt aus."
+            "No JobQueue available – install python-telegram-bot[job-queue]. "
+            "Weekly export is disabled."
         )
         return
 
