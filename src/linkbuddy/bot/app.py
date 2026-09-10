@@ -155,7 +155,7 @@ def _register_callbacks(application: Application) -> None:
 async def _reject_callback(update, context) -> None:
     """Buttons von fremden Accounts still ablehnen."""
     if update.callback_query is not None:
-        await update.callback_query.answer("🔒 Dieser Bot ist privat.", show_alert=True)
+        await update.callback_query.answer("🔒 This bot is private.", show_alert=True)
 
 
 async def _post_init(application: Application) -> None:

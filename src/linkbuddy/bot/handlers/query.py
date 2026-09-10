@@ -29,10 +29,10 @@ TAG_PAGE_SIZE = 30
 
 def _period_title(period: str) -> str:
     return {
-        "all": f"{ic.NEW} Letzte Links",
-        "heute": f"{ic.WAIT} Heute gespeichert",
-        "woche": f"{ic.WAIT} Letzte 7 Tage",
-        "monat": f"{ic.WAIT} Letzte 30 Tage",
+        "all": f"{ic.NEW} Latest links",
+        "heute": f"{ic.WAIT} Saved today",
+        "woche": f"{ic.WAIT} Last 7 days",
+        "monat": f"{ic.WAIT} Last 30 days",
     }[period]
 
 
@@ -128,13 +128,13 @@ async def search_with_keyword(
     view = ListView(
         kind="search",
         argument=keyword,
-        title=f'{ic.SEARCH} Ergebnisse für "{esc(keyword)}"',
+        title=f'{ic.SEARCH} Results for "{esc(keyword)}"',
     )
     await _show_view(
         update,
         context,
         view,
-        empty_hint=f'· Keine Links gefunden für "{esc(keyword)}"',
+        empty_hint=f'· No links found for "{esc(keyword)}"',
     )
 
 
@@ -158,7 +158,7 @@ async def show_tag(update: Update, context: BotContextTypes, tag: str) -> None:
         update,
         context,
         view,
-        empty_hint=f"· Keine Links mit <code>#{esc(tag)}</code>",
+        empty_hint=f"· No links with <code>#{esc(tag)}</code>",
         page_size=TAG_PAGE_SIZE,
     )
 
@@ -177,7 +177,7 @@ async def tags_command(update: Update, context: BotContextTypes) -> None:
         repo = ctx.repository(session)
         tree = await repo.tag_tree(user_id)
         if not tree:
-            await reply(update, "· Noch keine Tags vergeben. Speichere den ersten Link!")
+            await reply(update, "· No tags yet. Save your first link!")
             return
 
         blocks: list[str] = []
@@ -189,13 +189,13 @@ async def tags_command(update: Update, context: BotContextTypes) -> None:
             blocks.append(f"<b>#{esc(root)}</b>\n{simple_link_list(resources)}")
 
     if not blocks:
-        await reply(update, "· Noch keine Tags vergeben.")
+        await reply(update, "· No tags yet.")
         return
 
     text = "\n\n".join(blocks)
     # Telegram-Limit ~4096 Zeichen
     if len(text) > 4000:
-        text = text[:3900] + "\n\n… Liste gekürzt. Nutze /tag #name für Details."
+        text = text[:3900] + "\n\n… List truncated. Use /tag #name for details."
 
     if update.callback_query is not None:
         await edit(update, text)
@@ -233,10 +233,10 @@ async def period_command(update: Update, context: BotContextTypes) -> None:
 
     view = ListView(kind="period", argument=period, title=_period_title(period))
     empty = {
-        "all": "· Noch keine Links gespeichert.",
-        "heute": "· Heute noch nichts gespeichert.",
-        "woche": "· In den letzten 7 Tagen nichts gespeichert.",
-        "monat": "· In den letzten 30 Tagen nichts gespeichert.",
+        "all": "· No links saved yet.",
+        "heute": "· Nothing saved today.",
+        "woche": "· Nothing saved in the last 7 days.",
+        "monat": "· Nothing saved in the last 30 days.",
     }[period]
 
     await _show_view(update, context, view, empty_hint=empty, page_size=page_size)
@@ -254,13 +254,13 @@ async def pagination_callback(update: Update, context: BotContextTypes) -> None:
     view = get_view(context.user_data, token)
 
     if view is None:
-        await query.answer("Diese Liste ist abgelaufen. Bitte neu suchen.", show_alert=True)
+        await query.answer("This list expired. Please search again.", show_alert=True)
         return
 
     size = view.page_size or app_context(context).settings.page_size
     view.offset = max(0, view.offset + (size if direction == "next" else -size))
     await query.answer()
-    await _show_view(update, context, view, empty_hint="· Keine weiteren Links.", token=token)
+    await _show_view(update, context, view, empty_hint="· No more links.", token=token)
 
 
 async def tag_view_callback(update: Update, context: BotContextTypes) -> None:

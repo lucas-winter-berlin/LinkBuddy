@@ -45,4 +45,4 @@ def test_tags_to_text_and_match():
 def test_merge_and_format():
     assert merge_tags(["a", "b"], ["b", "c"]) == ["a", "b", "c"]
     assert format_tags(["ai"]) == "#ai"
-    assert format_tags([]) == "(keine)"
+    assert format_tags([]) == "(none)"

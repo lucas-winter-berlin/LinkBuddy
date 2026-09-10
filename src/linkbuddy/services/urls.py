@@ -159,18 +159,18 @@ async def check_link(url: str, *, timeout: float = 5.0) -> LinkCheck:
             if response.status_code in (403, 405, 501):
                 response = await client.get(url)
             if response.status_code == 404:
-                return LinkCheck(False, 404, "! Link antwortet nicht (404)")
+                return LinkCheck(False, 404, "! Link not responding (404)")
             if response.status_code >= 400:
                 return LinkCheck(
                     False,
                     response.status_code,
-                    f"! Link antwortet mit Fehler ({response.status_code})",
+                    f"! Link returned an error ({response.status_code})",
                 )
             return LinkCheck(True, response.status_code)
     except httpx.TimeoutException:
-        return LinkCheck(False, None, "! Link antwortet nicht (Timeout)")
+        return LinkCheck(False, None, "! Link not responding (timeout)")
     except httpx.HTTPError as exc:
-        return LinkCheck(False, None, f"! URL nicht erreichbar: {type(exc).__name__}")
+        return LinkCheck(False, None, f"! URL unreachable: {type(exc).__name__}")
 
 
 async def extract_title(url: str, *, timeout: float = 5.0, max_length: int = 100) -> str | None:

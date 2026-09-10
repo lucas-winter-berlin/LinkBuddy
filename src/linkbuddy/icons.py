@@ -75,8 +75,8 @@ _ALIASES = {
     "TRASH": "trash",
     "WARN": "warn",
     "WAIT": "wait",
-    "SECTION": "note",
-    "BOOK": "note",
+    "SECTION": "section",
+    "BOOK": "section",
     "INFO": "tip",
     "GEAR": "gear",
     "LOCK": "lock",
@@ -86,7 +86,7 @@ _ALIASES = {
     "TIP": "tip",
     "EMPTY": "tip",
     "NAV_PREV": "refresh",
-    "NAV_NEXT": "refresh",
+    "NAV_NEXT": "save",
     "TREND_UP": "stats",
     "TREND_DOWN": "stats",
     "TIME": "wait",
@@ -126,15 +126,17 @@ def fallback_emoji(name: str) -> str:
 
 
 def html(name: str) -> str:
-    """Icon fuer HTML-Nachrichten."""
+    """Icon fuer HTML-Nachrichten (Custom Emoji oder Unicode-Fallback)."""
     eid = emoji_id(name)
+    fb = fallback_emoji(name)
     if eid:
-        return f'<tg-emoji emoji-id="{eid}">{fallback_emoji(name)}</tg-emoji>'
-    return _TEXT.get(name, "▸")
+        return f'<tg-emoji emoji-id="{eid}">{fb}</tg-emoji>'
+    return fb
 
 
 def plain(name: str) -> str:
-    return _TEXT.get(name, "▸")
+    """Text-Praefix fuer Buttons ohne Custom-Emoji."""
+    return fallback_emoji(name)
 
 
 def button_icon_id(name: str) -> str | None:

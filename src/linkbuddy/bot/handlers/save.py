@@ -53,7 +53,7 @@ async def handle_new_link(update: Update, context: BotContextTypes, text: str) -
     url = urls[0]
 
     if not is_valid_url(url, max_length=settings.max_url_length):
-        await reply(update, "! URL ungültig. Versuche es nochmal.")
+        await reply(update, "! Invalid URL. Try again.")
         return
 
     # Tags und Notiz stehen im selben Text wie der Link.
@@ -61,7 +61,7 @@ async def handle_new_link(update: Update, context: BotContextTypes, text: str) -
     user_tags = extract_hashtags(remainder)
     note = _clean_note(strip_hashtags(remainder), settings.max_note_length)
 
-    status = await reply(update, f"{ic.WAIT} Prüfe Link …")
+    status = await reply(update, f"{ic.WAIT} Checking link …")
     if status is None:  # pragma: no cover
         return
 
@@ -78,8 +78,8 @@ async def handle_new_link(update: Update, context: BotContextTypes, text: str) -
 
     if len(urls) > 1:
         await status.reply_text(
-            f"◦ Ich habe {len(urls)} Links gefunden und speichere den ersten. "
-            "Schick die anderen einzeln nach.",
+            f"◦ Found {len(urls)} links – saving the first one. "
+            "Send the others one by one.",
         )
 
     await _advance_draft(update, context, draft, status)
@@ -169,31 +169,31 @@ def _render_confirmation(draft: Draft) -> str:
     label = source_label(draft.source)
     headline = draft.title or shorten_url(draft.url)
     lines = [
-        f"{label} erkannt: <b>{esc(headline)}</b>",
+        f"{label} detected: <b>{esc(headline)}</b>",
         f"<a href=\"{esc(draft.url)}\">{esc(shorten_url(draft.url, max_length=70))}</a>",
         "",
         f"Tags: {esc(format_tags(draft.tags))}",
-        f"Notiz: {esc(draft.notes) if draft.notes else '(keine)'}",
+        f"Note: {esc(draft.notes) if draft.notes else '(none)'}",
     ]
     if draft.broken_reason:
-        lines += ["", f"! Hinweis: {esc(draft.broken_reason)}"]
+        lines += ["", f"! Note: {esc(draft.broken_reason)}"]
     if draft.suggested_tags:
-        origin = "Gemini + Heuristik" if draft.ai_used else "Heuristik"
-        lines += ["", f"<i>Tag-Vorschlag über {origin}</i>"]
+        origin = "Gemini + heuristic" if draft.ai_used else "heuristic"
+        lines += ["", f"<i>Tag suggestion via {origin}</i>"]
     return "\n".join(lines)
 
 
 def _render_duplicate(original: Resource, draft: Draft, tz) -> str:
     lines = [
-        "! <b>Diese URL hast du schon gespeichert!</b>",
+        "! <b>You've already saved this URL!</b>",
         "",
-        f"Original vom: {format_date(original.created_at, tz)} "
+        f"Original from: {format_date(original.created_at, tz)} "
         f"({relative_age(original.created_at)})",
         f"   Tags: {esc(format_tags(list(original.tags or [])))}",
-        f"   Notiz: {esc(original.notes) if original.notes else '(keine)'}",
+        f"   Note: {esc(original.notes) if original.notes else '(none)'}",
         "",
-        f"Neue Tags: {esc(format_tags(draft.user_tags))}",
-        f"Neue Notiz: {esc(draft.notes) if draft.notes else '(keine)'}",
+        f"New tags: {esc(format_tags(draft.user_tags))}",
+        f"New note: {esc(draft.notes) if draft.notes else '(none)'}",
     ]
     return "\n".join(lines)
 
@@ -201,7 +201,7 @@ def _render_duplicate(original: Resource, draft: Draft, tz) -> str:
 def _render_saved(resource: Resource) -> str:
     return "\n".join(
         [
-            "✓ <b>Gespeichert!</b>",
+            "✓ <b>Saved!</b>",
             "",
             resource_block(resource),
         ]
@@ -227,14 +227,14 @@ async def save_callback(update: Update, context: BotContextTypes) -> None:
     draft = get_draft(context.user_data, token)
 
     if draft is None:
-        await query.answer("Dieser Entwurf ist abgelaufen. Schick den Link nochmal.", show_alert=True)
+        await query.answer("This draft expired. Send the link again.", show_alert=True)
         return
 
     if action == "cancel":
         drop_draft(context.user_data, token)
         set_pending(context.user_data, None)
-        await query.answer("Abgebrochen")
-        await edit(update, "× Nicht gespeichert.")
+        await query.answer("Cancelled")
+        await edit(update, "× Not saved.")
         return
 
     if action == "tags":
@@ -242,9 +242,9 @@ async def save_callback(update: Update, context: BotContextTypes) -> None:
         await query.answer()
         await edit(
             update,
-            "✎ Schick mir die Tags (komma- oder #-getrennt):\n"
+            "✎ Send me the tags (comma- or #-separated):\n"
             f"<code>{esc(' '.join('#' + t for t in draft.tags))}</code>\n\n"
-            "Mit <code>-</code> löschst du alle Tags.",
+            "Use <code>-</code> to clear all tags.",
         )
         return
 
@@ -253,13 +253,13 @@ async def save_callback(update: Update, context: BotContextTypes) -> None:
         await query.answer()
         await edit(
             update,
-            "≡ Schick mir die Notiz (ein Satz).\n"
-            "Mit <code>-</code> löschst du sie wieder.",
+            "≡ Send me the note (one sentence).\n"
+            "Use <code>-</code> to clear it.",
         )
         return
 
     if action == "ok":
-        await query.answer("Speichere …")
+        await query.answer("Saving …")
         await _persist_draft(update, context, draft, token)
 
 
@@ -270,19 +270,19 @@ async def broken_callback(update: Update, context: BotContextTypes) -> None:
     draft = get_draft(context.user_data, token)
 
     if draft is None:
-        await query.answer("Dieser Entwurf ist abgelaufen.", show_alert=True)
+        await query.answer("This draft expired.", show_alert=True)
         return
 
     if action == "cancel":
         drop_draft(context.user_data, token)
-        await query.answer("Abgebrochen")
-        await edit(update, "× Nicht gespeichert.")
+        await query.answer("Cancelled")
+        await edit(update, "× Not saved.")
         return
 
     if action == "edit":
         set_pending(context.user_data, Pending(kind="draft_url", ref=token))
         await query.answer()
-        await edit(update, "✎ Schick mir die korrigierte URL.")
+        await edit(update, "✎ Send me the corrected URL.")
         return
 
     if action == "save":
@@ -291,7 +291,7 @@ async def broken_callback(update: Update, context: BotContextTypes) -> None:
         message = query.message
         if message is None:  # pragma: no cover
             return
-        await message.edit_text(f"{ic.WAIT} Hole Titel …")
+        await message.edit_text(f"{ic.WAIT} Fetching title …")
         await _prepare_confirmation(update, context, draft, message)
 
 
@@ -304,22 +304,22 @@ async def duplicate_callback(update: Update, context: BotContextTypes) -> None:
     user_id = user_id_of(update)
 
     if draft is None:
-        await query.answer("Dieser Entwurf ist abgelaufen.", show_alert=True)
+        await query.answer("This draft expired.", show_alert=True)
         return
 
     if action == "cancel":
         drop_draft(context.user_data, token)
-        await query.answer("Abgebrochen")
-        await edit(update, "× Nichts gespeichert.")
+        await query.answer("Cancelled")
+        await edit(update, "× Nothing saved.")
         return
 
     if action == "merge":
-        await query.answer("Aktualisiere …")
+        await query.answer("Updating …")
         async with ctx.db.session() as session:
             repo = ctx.repository(session)
             original = await repo.get(user_id, draft.duplicate_id or 0)
             if original is None:
-                await edit(update, "· Das Original gibt es nicht mehr.")
+                await edit(update, "· The original no longer exists.")
                 return
             merged = merge_tags(list(original.tags or []), draft.user_tags)
             merged = merged[: ctx.settings.max_tags_per_link]
@@ -328,7 +328,7 @@ async def duplicate_callback(update: Update, context: BotContextTypes) -> None:
                 tags=merged,
                 notes=draft.notes if draft.notes else None,
             )
-            text = "↻ <b>Original aktualisiert!</b>\n\n" + resource_block(original)
+            text = "↻ <b>Original updated!</b>\n\n" + resource_block(original)
         drop_draft(context.user_data, token)
         await edit(update, text, reply_markup=keyboards.saved_actions(original.id, original.url))
         return
@@ -339,7 +339,7 @@ async def duplicate_callback(update: Update, context: BotContextTypes) -> None:
         message = query.message
         if message is None:  # pragma: no cover
             return
-        await message.edit_text(f"{ic.WAIT} Hole Titel …")
+        await message.edit_text(f"{ic.WAIT} Fetching title …")
         await _prepare_confirmation(update, context, draft, message)
 
 
@@ -353,7 +353,7 @@ async def apply_draft_tags(update: Update, context: BotContextTypes, token: str,
     draft = get_draft(context.user_data, token)
     if draft is None:
         set_pending(context.user_data, None)
-        await reply(update, "· Dieser Entwurf ist abgelaufen. Schick den Link nochmal.")
+        await reply(update, "· This draft expired. Send the link again.")
         return
 
     if text.strip() == "-":
@@ -364,13 +364,13 @@ async def apply_draft_tags(update: Update, context: BotContextTypes, token: str,
         except InvalidTagError as exc:
             await reply(
                 update,
-                f"! Ungültiges Tag-Format: <code>{esc(exc.raw)}</code>\nNutze: #kategorie/unter",
+                f"! Invalid tag format: <code>{esc(exc.raw)}</code>\nUse: #category/sub",
             )
             return
         if len(tags) > ctx.settings.max_tags_per_link:
             await reply(
                 update,
-                f"! Max. {ctx.settings.max_tags_per_link} Tags pro Link. Entferne einige.",
+                f"! Max. {ctx.settings.max_tags_per_link} tags per link. Remove some.",
             )
             return
 
@@ -389,7 +389,7 @@ async def apply_draft_note(update: Update, context: BotContextTypes, token: str,
     draft = get_draft(context.user_data, token)
     if draft is None:
         set_pending(context.user_data, None)
-        await reply(update, "· Dieser Entwurf ist abgelaufen. Schick den Link nochmal.")
+        await reply(update, "· This draft expired. Send the link again.")
         return
 
     draft.notes = None if text.strip() == "-" else _clean_note(text, ctx.settings.max_note_length)
@@ -406,12 +406,12 @@ async def apply_draft_url(update: Update, context: BotContextTypes, token: str, 
     draft = get_draft(context.user_data, token)
     if draft is None:
         set_pending(context.user_data, None)
-        await reply(update, "· Dieser Entwurf ist abgelaufen. Schick den Link nochmal.")
+        await reply(update, "· This draft expired. Send the link again.")
         return
 
     urls = find_urls(text)
     if not urls or not is_valid_url(urls[0], max_length=ctx.settings.max_url_length):
-        await reply(update, "! Das sieht nicht nach einer gültigen URL aus. Nochmal?")
+        await reply(update, "! That doesn't look like a valid URL. Try again?")
         return
 
     set_pending(context.user_data, None)
@@ -423,7 +423,7 @@ async def apply_draft_url(update: Update, context: BotContextTypes, token: str, 
     draft.force_save = False
     draft.broken_reason = None
 
-    status = await reply(update, f"{ic.WAIT} Prüfe Link …")
+    status = await reply(update, f"{ic.WAIT} Checking link …")
     if status is None:  # pragma: no cover
         return
     await _advance_draft(update, context, draft, status)

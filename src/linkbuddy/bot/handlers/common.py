@@ -64,18 +64,18 @@ async def start(update: Update, context: BotContextTypes) -> None:
     settings = app_context(context).settings
     uid = user_id_of(update)
 
-    lines = [f"{ic.OK} <b>LinkBuddy</b> ist bereit.", ""]
+    lines = [f"{ic.OK} <b>LinkBuddy</b> is ready.", ""]
     if settings.owner_user_id is None:
         lines += [
-            f"{ic.WARN} <b>OWNER_USER_ID ist nicht gesetzt.</b> Der Bot antwortet damit jedem.",
-            f"Trag <code>OWNER_USER_ID={uid}</code> in die .env ein und starte neu.",
+            f"{ic.WARN} <b>OWNER_USER_ID is not set.</b> The bot will reply to anyone.",
+            f"Add <code>OWNER_USER_ID={uid}</code> to .env and restart.",
             "",
         ]
     lines += [
-        "Schick mir einfach einen Link – ich schlage Tags vor, du bestätigst.",
-        "Unten: Tasten für Latest / Tags / Search / …",
+        "Just send me a link – I'll suggest tags, you confirm.",
+        "Below: buttons for Latest / Tags / Search / …",
         "",
-        "/help zeigt alle Befehle · /menu zeigt die Tastatur erneut.",
+        "/help shows all commands · /menu shows the keyboard again.",
     ]
     await reply(update, "\n".join(lines), reply_markup=kb.main_reply_keyboard())
 
@@ -98,24 +98,24 @@ async def help_command(update: Update, context: BotContextTypes) -> None:
 
 async def settings_command(update: Update, context: BotContextTypes) -> None:
     settings = app_context(context).settings
-    weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
+    weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     backend = "PostgreSQL" if "postgresql" in settings.database_url else "SQLite"
     tagging = (
-        f"Heuristik + Gemini ({settings.gemini_model})"
+        f"Heuristic + Gemini ({settings.gemini_model})"
         if settings.gemini_enabled
-        else "nur Heuristik (kein GEMINI_API_KEY gesetzt)"
+        else "heuristic only (no GEMINI_API_KEY set)"
     )
     text = (
-        f"<b>{ic.GEAR} EINSTELLUNGEN</b>\n"
-        f"Datenbank: {backend}\n"
-        f"Auto-Tagging: {tagging}\n"
-        f"Zeitzone: {settings.timezone.key}\n"
-        f"Wöchentlicher Export: {weekdays[settings.export_day]} "
+        f"<b>{ic.GEAR} SETTINGS</b>\n"
+        f"Database: {backend}\n"
+        f"Auto-tagging: {tagging}\n"
+        f"Timezone: {settings.timezone.key}\n"
+        f"Weekly export: {weekdays[settings.export_day]} "
         f"{settings.export_time.strftime('%H:%M')}\n"
-        f"Max. Tags pro Link: {settings.max_tags_per_link}\n"
-        f"Max. Notizlänge: {settings.max_note_length} Zeichen\n"
-        f"Treffer pro Seite: {settings.page_size}\n"
-        f"Umgebung: {settings.environment}"
+        f"Max tags per link: {settings.max_tags_per_link}\n"
+        f"Max note length: {settings.max_note_length} chars\n"
+        f"Hits per page: {settings.page_size}\n"
+        f"Environment: {settings.environment}"
     )
     await reply(update, text)
 
@@ -126,16 +126,16 @@ async def fallback(update: Update, context: BotContextTypes) -> None:
     if not is_authorised(update, settings):
         user = update.effective_user
         logger.warning("Zugriff abgelehnt fuer User-ID %s", user.id if user else "?")
-        await reply(update, f"{ic.LOCK} Dieser Bot ist privat.")
+        await reply(update, f"{ic.LOCK} This bot is private.")
         return
 
     message = update.effective_message
     if message is not None and message.text and message.text.startswith("/"):
-        await reply(update, f"{ic.WARN} Diesen Befehl kenne ich nicht. /help zeigt alle.")
+        await reply(update, f"{ic.WARN} Unknown command. /help shows all.")
         return
     await reply(
         update,
-        f"{ic.TIP} Damit kann ich nichts anfangen. Schick mir einen Link oder nutze /help.",
+        f"{ic.TIP} I can't use that. Send me a link or try /help.",
     )
 
 
@@ -156,7 +156,7 @@ async def error_handler(update: object, context: BotContextTypes) -> None:
     try:
         await context.bot.send_message(
             chat_id=chat.id,
-            text=f"{ic.NO} Da ist etwas schiefgelaufen. Der Fehler wurde protokolliert.",
+            text=f"{ic.NO} Something went wrong. The error was logged.",
             parse_mode=ParseMode.HTML,
         )
     except Exception:  # pragma: no cover - Fehler im Fehlerpfad

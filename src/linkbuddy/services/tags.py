@@ -81,7 +81,7 @@ def format_tag(tag: str) -> str:
 
 
 def format_tags(tags: list[str]) -> str:
-    return " ".join(format_tag(t) for t in tags) if tags else "(keine)"
+    return " ".join(format_tag(t) for t in tags) if tags else "(none)"
 
 
 def tag_prefix_parts(tag: str) -> list[str]:

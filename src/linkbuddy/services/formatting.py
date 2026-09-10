@@ -10,29 +10,29 @@ from ..db.models import Resource, ensure_utc
 from .tags import format_tags
 from .urls import source_label
 
-MONTHS_DE = [
-    "Januar",
-    "Februar",
-    "März",
+MONTHS = [
+    "January",
+    "February",
+    "March",
     "April",
-    "Mai",
-    "Juni",
-    "Juli",
+    "May",
+    "June",
+    "July",
     "August",
     "September",
-    "Oktober",
+    "October",
     "November",
-    "Dezember",
+    "December",
 ]
 
-WEEKDAYS_DE = [
-    "Montag",
-    "Dienstag",
-    "Mittwoch",
-    "Donnerstag",
-    "Freitag",
-    "Samstag",
-    "Sonntag",
+WEEKDAYS = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
 ]
 
 
@@ -47,38 +47,38 @@ def number_emoji(index: int) -> str:
 
 
 def relative_age(value: datetime, *, now: datetime | None = None) -> str:
-    """Deutsche Altersangabe wie "vor 2 Stunden" oder "vor 3 Tagen"."""
+    """English relative age like "2 hours ago" or "3 days ago"."""
     now = now or datetime.now(timezone.utc)
     delta = now - ensure_utc(value)
     seconds = int(delta.total_seconds())
 
     if seconds < 0:
-        return "gerade eben"
+        return "just now"
     if seconds < 60:
-        return "gerade eben"
+        return "just now"
 
     minutes = seconds // 60
     if minutes < 60:
-        return f"vor {minutes} Min."
+        return f"{minutes} min ago"
 
     hours = minutes // 60
     if hours < 24:
-        return "vor 1 Stunde" if hours == 1 else f"vor {hours} Stunden"
+        return "1 hour ago" if hours == 1 else f"{hours} hours ago"
 
     days = hours // 24
     if days < 7:
-        return "vor 1 Tag" if days == 1 else f"vor {days} Tagen"
+        return "1 day ago" if days == 1 else f"{days} days ago"
 
     weeks = days // 7
     if days < 31:
-        return "vor 1 Woche" if weeks == 1 else f"vor {weeks} Wochen"
+        return "1 week ago" if weeks == 1 else f"{weeks} weeks ago"
 
     months = days // 30
     if months < 12:
-        return "vor 1 Monat" if months == 1 else f"vor {months} Monaten"
+        return "1 month ago" if months == 1 else f"{months} months ago"
 
     years = days // 365
-    return "vor 1 Jahr" if years == 1 else f"vor {years} Jahren"
+    return "1 year ago" if years == 1 else f"{years} years ago"
 
 
 def format_date(value: datetime, tz) -> str:
@@ -87,9 +87,9 @@ def format_date(value: datetime, tz) -> str:
 
 
 def format_long_date(value: datetime, tz) -> str:
-    """Datum als "23. Januar 2026"."""
+    """Datum als "23 January 2026"."""
     local = ensure_utc(value).astimezone(tz)
-    return f"{local.day}. {MONTHS_DE[local.month - 1]} {local.year}"
+    return f"{local.day} {MONTHS[local.month - 1]} {local.year}"
 
 
 def display_title(resource: Resource) -> str:
@@ -114,7 +114,7 @@ def progress_bar(fraction: float, *, width: int = 10) -> str:
 def simple_link_list(resources: list[Resource]) -> str:
     """Kompakte Liste: - Titel (als Link)."""
     if not resources:
-        return "· keine Links"
+        return "· no links"
     return "\n".join(
         f'- <a href="{esc(resource.url)}">{esc(display_title(resource))}</a>'
         for resource in resources
@@ -149,8 +149,8 @@ def resource_list(
     )
 
 
-def page_footer(page_number: int, page_count: int, total: int, noun: str = "Ergebnisse") -> str:
-    return f"{DIVIDER}\nSeite {page_number} / {page_count} ({total} {noun})"
+def page_footer(page_number: int, page_count: int, total: int, noun: str = "results") -> str:
+    return f"{DIVIDER}\nPage {page_number} / {page_count} ({total} {noun})"
 
 
 def pluralise(count: int, singular: str, plural: str) -> str:

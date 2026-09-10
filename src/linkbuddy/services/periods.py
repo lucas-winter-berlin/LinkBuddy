@@ -24,11 +24,11 @@ PERIOD_ALIASES = {
 }
 
 PERIOD_LABELS = {
-    "heute": "heute",
-    "woche": "diese Woche",
-    "monat": "diesen Monat",
-    "jahr": "dieses Jahr",
-    "all": "insgesamt",
+    "heute": "today",
+    "woche": "this week",
+    "monat": "this month",
+    "jahr": "this year",
+    "all": "all time",
 }
 
 
@@ -77,7 +77,7 @@ def previous_window(
 def trend_percent(current: int, previous: int) -> str | None:
     """Veraenderung gegenueber dem Vorzeitraum als "+20%"."""
     if previous <= 0:
-        return "neu" if current > 0 else None
+        return "new" if current > 0 else None
     change = round((current - previous) / previous * 100)
     sign = "+" if change >= 0 else ""
     return f"{sign}{change}%"

@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 async def edit_command(update: Update, context: BotContextTypes) -> None:
     resource_id = _parse_id(context.args)
     if resource_id is None:
-        await reply(update, "Nutzung: <code>/edit &lt;Link-ID&gt;</code>")
+        await reply(update, "Usage: <code>/edit &lt;link-ID&gt;</code>")
         return
     await _show_edit_menu(update, context, resource_id)
 
@@ -43,13 +43,13 @@ async def _show_edit_menu(update: Update, context: BotContextTypes, resource_id:
     async with ctx.db.session() as session:
         resource = await ctx.repository(session).get(user_id, resource_id)
         if resource is None:
-            await reply(update, f"😕 Kein Link mit ID <code>{resource_id}</code>.")
+            await reply(update, f"😕 No link with ID <code>{resource_id}</code>.")
             return
         text = (
-            f"<b>✏️ Bearbeite Link #{resource.id}</b>\n\n"
+            f"<b>✏️ Edit link #{resource.id}</b>\n\n"
             f"<a href=\"{esc(resource.url)}\">{esc(resource.title or resource.url)}</a>\n\n"
             f"Tags: {esc(format_tags(list(resource.tags or [])))}\n"
-            f"Notiz: {esc(resource.notes) if resource.notes else '(keine)'}"
+            f"Note: {esc(resource.notes) if resource.notes else '(none)'}"
         )
 
     markup = keyboards.edit_menu(resource_id)
@@ -74,12 +74,12 @@ async def apply_edit_tags(
         except InvalidTagError as exc:
             await reply(
                 update,
-                f"⚠️ Ungültiges Tag-Format: <code>{esc(exc.raw)}</code>\nNutze: #kategorie/unter",
+                f"⚠️ Invalid tag format: <code>{esc(exc.raw)}</code>\nUse: #category/sub",
             )
             return
         if len(tags) > ctx.settings.max_tags_per_link:
             await reply(
-                update, f"⚠️ Max. {ctx.settings.max_tags_per_link} Tags pro Link. Entferne einige."
+                update, f"⚠️ Max. {ctx.settings.max_tags_per_link} tags per link. Remove some."
             )
             return
 
@@ -88,10 +88,10 @@ async def apply_edit_tags(
         resource = await repo.get(user_id, resource_id)
         if resource is None:
             set_pending(context.user_data, None)
-            await reply(update, "😕 Diesen Link gibt es nicht mehr.")
+            await reply(update, "😕 That link no longer exists.")
             return
         await repo.update_content(resource, tags=tags)
-        text_out = "✅ Tags aktualisiert.\n\n" + resource_block(resource)
+        text_out = "✅ Tags updated.\n\n" + resource_block(resource)
         markup = keyboards.saved_actions(resource.id, resource.url)
 
     set_pending(context.user_data, None)
@@ -111,10 +111,10 @@ async def apply_edit_note(
         resource = await repo.get(user_id, resource_id)
         if resource is None:
             set_pending(context.user_data, None)
-            await reply(update, "😕 Diesen Link gibt es nicht mehr.")
+            await reply(update, "😕 That link no longer exists.")
             return
         await repo.update_content(resource, notes=note)
-        text_out = "✅ Notiz aktualisiert.\n\n" + resource_block(resource)
+        text_out = "✅ Note updated.\n\n" + resource_block(resource)
         markup = keyboards.saved_actions(resource.id, resource.url)
 
     set_pending(context.user_data, None)
@@ -129,7 +129,7 @@ async def apply_edit_note(
 async def delete_command(update: Update, context: BotContextTypes) -> None:
     resource_id = _parse_id(context.args)
     if resource_id is None:
-        await reply(update, "Nutzung: <code>/delete &lt;Link-ID&gt;</code>")
+        await reply(update, "Usage: <code>/delete &lt;link-ID&gt;</code>")
         return
     await _ask_delete(update, context, resource_id)
 
@@ -141,14 +141,14 @@ async def _ask_delete(update: Update, context: BotContextTypes, resource_id: int
     async with ctx.db.session() as session:
         resource = await ctx.repository(session).get(user_id, resource_id)
         if resource is None:
-            await reply(update, f"😕 Kein Link mit ID <code>{resource_id}</code>.")
+            await reply(update, f"😕 No link with ID <code>{resource_id}</code>.")
             return
         text = (
-            "<b>❌ Löschen bestätigen?</b>\n\n"
+            "<b>❌ Confirm delete?</b>\n\n"
             f"<a href=\"{esc(resource.url)}\">{esc(resource.title or resource.url)}</a>\n"
             f"Tags: {esc(format_tags(list(resource.tags or [])))}\n"
-            f"Gespeichert: {format_date(resource.created_at, ctx.settings.timezone)}\n\n"
-            "Danach taucht der Link in Suche und Statistik nicht mehr auf."
+            f"Saved: {format_date(resource.created_at, ctx.settings.timezone)}\n\n"
+            "The link will no longer appear in search or stats."
         )
 
     markup = keyboards.delete_confirm(resource_id)
@@ -181,8 +181,8 @@ async def resource_callback(update: Update, context: BotContextTypes) -> None:
         await query.answer()
         await edit(
             update,
-            "✏️ Schick mir die neuen Tags (komma- oder #-getrennt).\n"
-            "Mit <code>-</code> löschst du alle Tags.",
+            "✏️ Send me the new tags (comma- or #-separated).\n"
+            "Use <code>-</code> to clear all tags.",
         )
         return
 
@@ -191,17 +191,17 @@ async def resource_callback(update: Update, context: BotContextTypes) -> None:
         await query.answer()
         await edit(
             update,
-            "📝 Schick mir die neue Notiz.\nMit <code>-</code> löschst du sie.",
+            "📝 Send me the new note.\nUse <code>-</code> to clear it.",
         )
         return
 
     if action == "done":
         set_pending(context.user_data, None)
-        await query.answer("Fertig")
+        await query.answer("Done")
         async with ctx.db.session() as session:
             resource = await ctx.repository(session).get(user_id, resource_id)
         if resource is None:
-            await edit(update, "😕 Diesen Link gibt es nicht mehr.")
+            await edit(update, "😕 That link no longer exists.")
             return
         await edit(
             update,
@@ -221,20 +221,20 @@ async def resource_callback(update: Update, context: BotContextTypes) -> None:
         return
 
     if action == "delno":
-        await query.answer("Abgebrochen")
-        await edit(update, "👍 Nichts gelöscht.")
+        await query.answer("Cancelled")
+        await edit(update, "👍 Nothing deleted.")
         return
 
     if action == "delyes":
-        await query.answer("Lösche …")
+        await query.answer("Deleting …")
         async with ctx.db.session() as session:
             repo = ctx.repository(session)
             resource = await repo.get(user_id, resource_id)
             if resource is None:
-                await edit(update, "😕 Diesen Link gibt es nicht mehr.")
+                await edit(update, "😕 That link no longer exists.")
                 return
             await repo.soft_delete(resource)
-        await edit(update, f"✅ Link <code>#{resource_id}</code> gelöscht.")
+        await edit(update, f"✅ Link <code>#{resource_id}</code> deleted.")
 
 
 # ----------------------------------------------------------------------
@@ -258,8 +258,8 @@ async def export_command(update: Update, context: BotContextTypes) -> None:
         except InvalidTagError:
             await reply(
                 update,
-                "Nutzung: <code>/export [#tag] [format]</code>\n"
-                f"Formate: {', '.join(FORMATS)}",
+                "Usage: <code>/export [#tag] [format]</code>\n"
+                f"Formats: {', '.join(FORMATS)}",
             )
             return
 
@@ -268,12 +268,12 @@ async def export_command(update: Update, context: BotContextTypes) -> None:
         resources = await repo.list_for_export(user_id, tag=tag)
 
     if not resources:
-        await reply(update, "😕 Nichts zu exportieren.")
+        await reply(update, "😕 Nothing to export.")
         return
 
     export = build_export(resources, fmt=fmt, tag_filter=tag)
     caption = (
-        f"💾 Export erstellt\n"
+        f"💾 Export created\n"
         f"Format: {fmt} | Links: {len(resources)} | {export.size_kb:.1f} KB"
         + (f"\nFilter: #{tag}" if tag else "")
     )

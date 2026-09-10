@@ -42,8 +42,8 @@ async def weekly_export(context: ContextTypes.DEFAULT_TYPE) -> None:
     if not resources:
         await context.bot.send_message(
             chat_id=user_id,
-            text=f"{ic.EMPTY} Diese Woche keine neuen Links. Deine Sammlung: "
-            f"{total} Links insgesamt.",
+            text=f"{ic.EMPTY} No new links this week. Your collection: "
+            f"{total} links total.",
         )
         async with ctx.db.session() as session:
             await ctx.repository(session).log_export(
@@ -64,8 +64,8 @@ async def weekly_export(context: ContextTypes.DEFAULT_TYPE) -> None:
             document=BytesIO(export.content),
             filename=export.filename,
             caption=(
-                f"{ic.EXPORT} Deine Ressourcen dieser Woche\n"
-                f"{len(resources)} neue Links | {total} insgesamt"
+                f"{ic.EXPORT} Your resources this week\n"
+                f"{len(resources)} new links | {total} total"
             ),
         )
     except Exception:

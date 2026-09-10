@@ -7,10 +7,10 @@ from linkbuddy.services.periods import parse_period, period_start, trend_percent
 import pytest
 
 
-def test_relative_age_german():
+def test_relative_age_english():
     now = datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc)
     created = now.replace(hour=10)
-    assert relative_age(created, now=now) == "vor 2 Stunden"
+    assert relative_age(created, now=now) == "2 hours ago"
 
 
 def test_period_start_heute():
@@ -26,7 +26,7 @@ def test_period_start_heute():
 def test_parse_period_and_trend():
     assert parse_period("week") == "woche"
     assert trend_percent(12, 10) == "+20%"
-    assert trend_percent(5, 0) == "neu"
+    assert trend_percent(5, 0) == "new"
 
 
 def test_load_settings_requires_token(monkeypatch, tmp_path):

@@ -29,7 +29,7 @@ from ..context import BotContextTypes, app_context, reply, user_id_of
 
 logger = logging.getLogger(__name__)
 
-WEEKDAYS_DE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 
 async def stats_command(update: Update, context: BotContextTypes) -> None:
@@ -38,7 +38,7 @@ async def stats_command(update: Update, context: BotContextTypes) -> None:
         try:
             tag = normalise_tag(raw)
         except InvalidTagError:
-            await reply(update, "! Ungültiges Tag-Format. Nutze: <code>#kategorie/unter</code>")
+            await reply(update, "! Invalid tag format. Use: <code>#category/sub</code>")
             return
         await _tag_stats(update, context, tag)
         return
@@ -55,7 +55,7 @@ async def _overall_stats(update: Update, context: BotContextTypes) -> None:
         repo = ctx.repository(session)
         total = await repo.count(user_id)
         if total == 0:
-            await reply(update, "· Noch keine Links gespeichert. Schick mir den ersten!")
+            await reply(update, "· No links saved yet. Send me the first one!")
             return
 
         week_start = period_start("woche", tz)
@@ -76,11 +76,11 @@ async def _overall_stats(update: Update, context: BotContextTypes) -> None:
     month_trend = trend_percent(this_month, last_month)
 
     lines = [
-        f"<b>{ic.STATS} RESSOURCEN-ÜBERSICHT</b>",
+        f"<b>{ic.STATS} RESOURCE OVERVIEW</b>",
         DIVIDER,
-        f"Gesamt: <b>{total}</b> Links",
-        f"   Diese Woche: {this_week} neu" + (f" ({week_trend})" if week_trend else ""),
-        f"   Dieser Monat: {this_month} neu" + (f" ({month_trend})" if month_trend else ""),
+        f"Total: <b>{total}</b> links",
+        f"   This week: {this_week} new" + (f" ({week_trend})" if week_trend else ""),
+        f"   This month: {this_month} new" + (f" ({month_trend})" if month_trend else ""),
         "",
     ]
 
@@ -91,7 +91,7 @@ async def _overall_stats(update: Update, context: BotContextTypes) -> None:
         lines.append("")
 
     if by_source:
-        lines.append(f"<b>{ic.CHART} Nach Quelle</b>")
+        lines.append(f"<b>{ic.CHART} By source</b>")
         width = max(len(source_label(src)) for src, _ in by_source)
         for src, cnt in by_source:
             share = cnt / total
@@ -100,8 +100,8 @@ async def _overall_stats(update: Update, context: BotContextTypes) -> None:
         lines.append("")
 
     if oldest:
-        lines.append(f"Ältester Link: {format_long_date(oldest, tz)}")
-    lines.append(f"Nächster Export: {_next_export_text(settings)}")
+        lines.append(f"Oldest link: {format_long_date(oldest, tz)}")
+    lines.append(f"Next export: {_next_export_text(settings)}")
     lines.append(DIVIDER)
 
     await reply(update, "\n".join(lines))
@@ -117,7 +117,7 @@ async def _tag_stats(update: Update, context: BotContextTypes, tag: str) -> None
         page = await repo.by_tag(user_id, tag, limit=1, offset=0)
         total = page.total
         if total == 0:
-            await reply(update, f"· Keine Links mit <code>#{esc(tag)}</code>")
+            await reply(update, f"· No links with <code>#{esc(tag)}</code>")
             return
 
         counts = await repo.tag_counts(user_id)
@@ -136,19 +136,19 @@ async def _tag_stats(update: Update, context: BotContextTypes, tag: str) -> None
         key=lambda kv: (-kv[1], kv[0]),
     )
 
-    lines = [f"<b>{ic.TAG} TAG: #{esc(tag)}</b> ({total} Links)", DIVIDER]
+    lines = [f"<b>{ic.TAG} TAG: #{esc(tag)}</b> ({total} links)", DIVIDER]
     if subtags:
-        lines.append("Untergruppen:")
+        lines.append("Subgroups:")
         lines += [f"  #{esc(sub)} ({cnt})" for sub, cnt in subtags]
         lines.append("")
-    lines += [f"Diese Woche: {week} neu", f"Dieser Monat: {month} neu"]
+    lines += [f"This week: {week} new", f"This month: {month} new"]
     if newest:
-        lines.append(f"Zuletzt hinzugefügt: {relative_age(newest)}")
+        lines.append(f"Last added: {relative_age(newest)}")
 
     trend = trend_percent(week, last_week)
     if trend:
         arrow = ic.TREND_UP if week >= last_week else ic.TREND_DOWN
-        lines += ["", f"Trend: {arrow} {trend} vs. Vorwoche"]
+        lines += ["", f"Trend: {arrow} {trend} vs. last week"]
 
     await reply(update, "\n".join(lines))
 
@@ -166,7 +166,7 @@ async def top_tags_command(update: Update, context: BotContextTypes) -> None:
 
     top = counts.most_common(10)
     if not top:
-        await reply(update, f"· Keine Tags {PERIOD_LABELS[period]}.")
+        await reply(update, f"· No tags {PERIOD_LABELS[period]}.")
         return
 
     lines = [f"<b>{ic.STATS} TOP 10 TAGS ({PERIOD_LABELS[period]})</b>", ""]
@@ -182,19 +182,19 @@ async def timeline_command(update: Update, context: BotContextTypes) -> None:
     user_id = user_id_of(update)
     raw = " ".join(context.args or []).strip()
     if not raw:
-        await reply(update, "Nutzung: <code>/timeline #ai</code>")
+        await reply(update, "Usage: <code>/timeline #ai</code>")
         return
     try:
         tag = normalise_tag(raw)
     except InvalidTagError:
-        await reply(update, "! Ungültiges Tag-Format. Nutze: <code>#kategorie/unter</code>")
+        await reply(update, "! Invalid tag format. Use: <code>#category/sub</code>")
         return
 
     async with ctx.db.session() as session:
         buckets = await ctx.repository(session).timeline(user_id, tag, weeks=12)
 
     if not buckets:
-        await reply(update, f"· Keine Links mit <code>#{esc(tag)}</code>")
+        await reply(update, f"· No links with <code>#{esc(tag)}</code>")
         return
 
     highest = max(count for _, count in buckets)
@@ -203,9 +203,9 @@ async def timeline_command(update: Update, context: BotContextTypes) -> None:
     for monday, count in buckets:
         local = monday.astimezone(tz)
         sunday = local + timedelta(days=6)
-        label = f"KW {local.isocalendar().week:02d} ({local:%d.%m}–{sunday:%d.%m})"
+        label = f"W{local.isocalendar().week:02d} ({local:%d.%m}–{sunday:%d.%m})"
         bar = progress_bar(count / highest, width=10)
-        noun = "Link" if count == 1 else "Links"
+        noun = "link" if count == 1 else "links"
         lines.append(f"<code>{esc(label)}</code> {bar} {count} {noun}")
     await reply(update, "\n".join(lines))
 
@@ -215,12 +215,12 @@ async def related_command(update: Update, context: BotContextTypes) -> None:
     user_id = user_id_of(update)
     raw = " ".join(context.args or []).strip()
     if not raw:
-        await reply(update, "Nutzung: <code>/related #ai/evals</code>")
+        await reply(update, "Usage: <code>/related #ai/evals</code>")
         return
     try:
         tag = normalise_tag(raw)
     except InvalidTagError:
-        await reply(update, "! Ungültiges Tag-Format. Nutze: <code>#kategorie/unter</code>")
+        await reply(update, "! Invalid tag format. Use: <code>#category/sub</code>")
         return
 
     async with ctx.db.session() as session:
@@ -229,12 +229,12 @@ async def related_command(update: Update, context: BotContextTypes) -> None:
     if not related:
         await reply(
             update,
-            f"· <code>#{esc(tag)}</code> taucht bisher nie zusammen mit anderen Tags auf.",
+            f"· <code>#{esc(tag)}</code> never co-occurs with other tags yet.",
         )
         return
 
     highest = related[0][1]
-    lines = [f"<b>{ic.RELATED} TAGS DIE MIT #{esc(tag)} ZUSAMMEN AUFTAUCHEN</b>", ""]
+    lines = [f"<b>{ic.RELATED} TAGS THAT CO-OCCUR WITH #{esc(tag)}</b>", ""]
     for other, count in related[:10]:
         lines.append(f"#{esc(other)} ({count}x)  {progress_bar(count / highest, width=8)}")
     await reply(update, "\n".join(lines))
@@ -242,12 +242,12 @@ async def related_command(update: Update, context: BotContextTypes) -> None:
 
 async def similar_command(update: Update, context: BotContextTypes) -> None:
     if not context.args:
-        await reply(update, "Nutzung: <code>/similar &lt;Link-ID&gt;</code>")
+        await reply(update, "Usage: <code>/similar &lt;link-ID&gt;</code>")
         return
     try:
         resource_id = int(context.args[0].lstrip("#"))
     except ValueError:
-        await reply(update, "! Die Link-ID ist eine Zahl, z.B. <code>/similar 5</code>")
+        await reply(update, "! Link ID must be a number, e.g. <code>/similar 5</code>")
         return
     await show_similar(update, context, resource_id)
 
@@ -260,7 +260,7 @@ async def show_similar(update: Update, context: BotContextTypes, resource_id: in
         repo = ctx.repository(session)
         source = await repo.get(user_id, resource_id)
         if source is None:
-            await reply(update, f"· Kein Link mit ID <code>{resource_id}</code>.")
+            await reply(update, f"· No link with ID <code>{resource_id}</code>.")
             return
         matches = await repo.similar(user_id, source, limit=5)
         source_text = resource_block(source)
@@ -268,14 +268,14 @@ async def show_similar(update: Update, context: BotContextTypes, resource_id: in
     if not matches:
         await reply(
             update,
-            f"<b>{ic.RELATED} ÄHNLICHE LINKS ZU</b>\n\n{source_text}\n\n· Nichts Vergleichbares gefunden.",
+            f"<b>{ic.RELATED} SIMILAR LINKS TO</b>\n\n{source_text}\n\n· Nothing comparable found.",
         )
         return
 
-    lines = [f"<b>{ic.RELATED} ÄHNLICHE LINKS ZU</b>\n\n{source_text}", "", DIVIDER, ""]
+    lines = [f"<b>{ic.RELATED} SIMILAR LINKS TO</b>\n\n{source_text}", "", DIVIDER, ""]
     for index, (resource, shared) in enumerate(matches, start=1):
         lines.append(resource_block(resource, index))
-        lines.append(f"   Gemeinsam: {esc(' '.join('#' + t for t in shared))}")
+        lines.append(f"   Shared: {esc(' '.join('#' + t for t in shared))}")
         lines.append("")
     await reply(update, "\n".join(lines).strip())
 
@@ -293,4 +293,4 @@ def _next_export_text(settings) -> str:
     ) + timedelta(days=days_ahead)
     if candidate <= now:
         candidate += timedelta(days=7)
-    return f"{WEEKDAYS_DE[settings.export_day]} {candidate:%d.%m.} um {candidate:%H:%M} Uhr"
+    return f"{WEEKDAYS[settings.export_day]} {candidate:%d.%m.} at {candidate:%H:%M}"

@@ -15,7 +15,7 @@ from . import common, manage, query, save, stats
 logger = logging.getLogger(__name__)
 
 HINT = (
-    "🤔 Da war kein Link drin.\n\n"
+    "🤔 No link in that message.\n\n"
     "Paste a URL, send <code>#tag</code>, tap a bottom button, "
     "or use /help."
 )
