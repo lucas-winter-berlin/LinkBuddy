@@ -97,23 +97,27 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-## Custom emoji pack
+## Custom emoji pack (optional)
+
+Only needed if you want your own Telegram custom emoji pack (forks /
+rebrand). The shipped IDs in `assets/emoji_pack.json` belong to the
+original bot; regenerate for yours:
 
 ```bash
 python scripts/generate_icons.py
 python scripts/upload_emoji_pack.py
 ```
 
-Requires a running bot token and `OWNER_USER_ID`. IDs are written to
-`assets/emoji_pack.json`. Button icons need Telegram Premium on the bot
-owner; message icons work for everyone.
+Requires a running bot token and `OWNER_USER_ID`. Button icons need
+Telegram Premium on the bot owner; message icons work for everyone.
 
 ## Deploy (Railway)
 
-1. Connect this repo (or `railway up`).
-2. Set `TELEGRAM_BOT_TOKEN`, `OWNER_USER_ID`, optional `DATABASE_URL` / `GEMINI_API_KEY`.
-3. Start command: `python main.py` (see `railway.toml`).
-4. Schema: auto-created on boot, or apply `migrations/001_init.sql`.
+See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the full walkthrough (GitHub → Railway + Postgres).
+
+Short version: connect the GitHub repo on [railway.app](https://railway.app), add
+Postgres, set `TELEGRAM_BOT_TOKEN` / `OWNER_USER_ID` / `DATABASE_URL`, deploy,
+then **stop the local bot**.
 
 **Run only one polling process per token.**
 
@@ -134,16 +138,19 @@ owner; message icons work for everyone.
 ## Project layout
 
 ```
-├── docs/ARCHITECTURE.md     # System design
+├── docs/
+│   ├── ARCHITECTURE.md      # System design
+│   └── DEPLOY.md            # Railway + Postgres
 ├── src/linkbuddy/           # Application package
 │   ├── bot/                 # Telegram handlers & jobs
 │   ├── db/                  # Models + repository
 │   ├── services/            # Domain logic (no Telegram imports)
 │   ├── config.py
 │   └── icons.py
-├── scripts/                 # Icon generate / emoji upload
-├── assets/                  # Emoji WEBP + pack JSON
+├── scripts/                 # Optional: regenerate/upload emoji pack
+├── assets/                  # Emoji WEBP + pack JSON (for custom pack setup)
 ├── migrations/              # Postgres reference SQL
+├── railway.toml             # Production start command
 └── tests/
 ```
 

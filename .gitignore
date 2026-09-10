@@ -22,6 +22,9 @@ build/
 .coverage
 htmlcov/
 
+# Railway local link state (if present)
+.railway/
+
 # IDE / OS
 .idea/
 .vscode/
