@@ -14,7 +14,7 @@ Architecture deep-dive: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
 - Auto-tagging: domain/word heuristics + optional [Gemini](https://ai.google.dev/)
 - Duplicate detection (merge / save separately / cancel)
 - Broken-link warning with “save anyway”
-- Search & browse: `/suche`, `/tag`, `/tags`, `/neue`, `/heute`, `/woche`, `/monat`
+- Search & browse: `/search`, `/tag`, `/tags`, `/latest`, `/today`, `/week`, `/month`
 - Stats: `/stats`, `/top_tags`, `/timeline`, `/related`, `/similar`
 - Manage: `/edit`, `/delete`, `/export` (`json` · `markdown` · `csv` · `notion`)
 - Weekly JSON export via JobQueue (default: Sunday 18:00 `Europe/Berlin`)
@@ -83,10 +83,13 @@ https://arxiv.org/abs/2401.12345 #ai/evals Nice paper!
 
 | Command | Purpose |
 |---------|---------|
-| `/tags` | All tags with links as a simple list |
+| `/search …` | Full-text search |
 | `/tag #ai` | Links under one tag (incl. children) |
-| `/suche …` | Full-text search |
-| `/neue [N]` | Latest links |
+| `/tags` | All tags with links as a simple list |
+| `/latest [N]` | Latest links |
+| `/today` | Saved today |
+| `/week` | Last 7 days |
+| `/month` | Last 30 days |
 | `/stats` | Overview |
 | `/export` | Download collection |
 

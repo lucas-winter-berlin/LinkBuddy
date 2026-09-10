@@ -1,4 +1,4 @@
-"""Abfragen: /suche, /tag, /tags, /neue, /heute, /woche, /monat."""
+"""Queries: /search, /tag, /tags, /latest, /today, /week, /month."""
 
 from __future__ import annotations
 
@@ -113,7 +113,7 @@ async def _show_view(
 async def search_command(update: Update, context: BotContextTypes) -> None:
     keyword = " ".join(context.args or []).strip()
     if not keyword:
-        await reply(update, "Nutzung: <code>/suche &lt;keyword&gt;</code>")
+        await reply(update, "Usage: <code>/search &lt;keyword&gt;</code>")
         return
 
     view = ListView(
@@ -195,15 +195,23 @@ async def tags_command(update: Update, context: BotContextTypes) -> None:
 
 
 async def period_command(update: Update, context: BotContextTypes) -> None:
-    """Bedient /neue, /heute, /woche und /monat ueber den Command-Namen."""
+    """Handles /latest, /today, /week, /month (plus legacy German aliases)."""
     message = update.effective_message
     command = ""
     if message and message.text:
         command = message.text.split()[0].lstrip("/").split("@")[0].lower()
 
-    period = {"neue": "all", "heute": "heute", "woche": "woche", "monat": "monat"}.get(
-        command, "all"
-    )
+    period = {
+        "latest": "all",
+        "new": "all",
+        "neue": "all",
+        "today": "heute",
+        "heute": "heute",
+        "week": "woche",
+        "woche": "woche",
+        "month": "monat",
+        "monat": "monat",
+    }.get(command, "all")
 
     page_size = app_context(context).settings.page_size
     if period == "all" and context.args:
@@ -211,7 +219,7 @@ async def period_command(update: Update, context: BotContextTypes) -> None:
             requested = int(context.args[0])
             page_size = max(1, min(20, requested))
         except ValueError:
-            await reply(update, "Nutzung: <code>/neue [Anzahl]</code>")
+            await reply(update, "Usage: <code>/latest [count]</code>")
             return
 
     view = ListView(kind="period", argument=period, title=_period_title(period))

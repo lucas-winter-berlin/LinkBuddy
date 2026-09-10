@@ -13,46 +13,46 @@ from ..context import BotContextTypes, app_context, is_authorised, reply, user_i
 
 logger = logging.getLogger(__name__)
 
-HELP_TEXT = f"""<b>{ic.BOOK} BEFEHLE ÜBERSICHT</b>
+HELP_TEXT = f"""<b>{ic.BOOK} COMMANDS</b>
 
-<b>{ic.LINK} SPEICHERN</b>
-  Link posten oder weiterleiten
-  → Bot schlägt Tags vor, du bestätigst
-  <code>https://... #ai/evals Kurze Notiz</code>
+<b>{ic.LINK} SAVE</b>
+  Paste or forward a link
+  → Bot suggests tags, you confirm
+  <code>https://... #ai/evals Short note</code>
 
-<b>{ic.SEARCH} SUCHEN &amp; ABRUFEN</b>
-  /suche &lt;keyword&gt; – Volltext in URL, Titel, Tags, Notiz
-  /tag #kategorie – Alle Links mit einem Tag
-  /tags – Liste aller Tags mit Count
-  /neue [N] – Letzte N Links (Standard: 5)
-  /heute – Nur heute gespeichert
-  /woche – Letzte 7 Tage
-  /monat – Letzte 30 Tage
+<b>{ic.SEARCH} SEARCH &amp; BROWSE</b>
+  /search &lt;keyword&gt; – full text in URL, title, tags, note
+  /tag #category – links with a tag
+  /tags – all tags with counts
+  /latest [N] – last N links (default: 5)
+  /today – saved today
+  /week – last 7 days
+  /month – last 30 days
 
-<b>{ic.STATS} STATISTIKEN</b>
-  /stats – Gesamt-Überblick
-  /stats #ai – Statistik für ein Tag
-  /top_tags [woche|monat|jahr] – Top 10 Tags
-  /timeline #ai – Tag-Verlauf über Zeit
+<b>{ic.STATS} STATS</b>
+  /stats – overview
+  /stats #ai – stats for a tag
+  /top_tags [week|month|year] – top 10 tags
+  /timeline #ai – tag over time
 
-<b>{ic.RELATED} VERBINDUNGEN</b>
-  /related #ai – Tags, die oft zusammen auftauchen
-  /similar &lt;ID&gt; – Ähnliche Links finden
+<b>{ic.RELATED} RELATIONS</b>
+  /related #ai – tags that co-occur
+  /similar &lt;ID&gt; – similar links
 
-<b>{ic.GEAR} VERWALTEN</b>
-  /edit &lt;ID&gt; – Tags/Notiz bearbeiten
-  /delete &lt;ID&gt; – Link löschen (mit Bestätigung)
+<b>{ic.GEAR} MANAGE</b>
+  /edit &lt;ID&gt; – edit tags/note
+  /delete &lt;ID&gt; – delete link (confirm)
   /export [#tag] [format] – markdown | json | csv | notion
 
-<b>{ic.TIP} SONSTIGES</b>
-  /help – Diese Übersicht
-  /settings – Aktuelle Konfiguration
+<b>{ic.TIP} OTHER</b>
+  /help – this overview
+  /settings – current config
 
-<b>{ic.TIP} TIPPS</b>
-  · Tags: #kategorie/unter (z.B. #ai/evals)
-  · Mehrere Tags: #ai/agents #tools
-  · Die <code>#ID</code> hinter jedem Treffer nutzt du für /edit, /delete, /similar
-  · Link weiterleiten reicht – der Bot erkennt ihn automatisch"""
+<b>{ic.TIP} TIPS</b>
+  · Tags: #category/sub (e.g. #ai/evals)
+  · Multiple tags: #ai/agents #tools
+  · Use the <code>#ID</code> after each hit for /edit, /delete, /similar
+  · Forwarding a link is enough – the bot detects it"""
 
 
 async def start(update: Update, context: BotContextTypes) -> None:

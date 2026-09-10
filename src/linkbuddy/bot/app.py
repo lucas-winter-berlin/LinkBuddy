@@ -25,23 +25,23 @@ from .handlers import common, manage, query, router, stats
 logger = logging.getLogger(__name__)
 
 BOT_COMMANDS = [
-    BotCommand("suche", "Volltext-Suche"),
-    BotCommand("tag", "Links mit einem Tag"),
-    BotCommand("tags", "Alle Tags mit Count"),
-    BotCommand("neue", "Letzte Links"),
-    BotCommand("heute", "Heute gespeichert"),
-    BotCommand("woche", "Letzte 7 Tage"),
-    BotCommand("monat", "Letzte 30 Tage"),
-    BotCommand("stats", "Statistiken"),
-    BotCommand("top_tags", "Top 10 Tags"),
-    BotCommand("timeline", "Verlauf eines Tags"),
-    BotCommand("related", "Verwandte Tags"),
-    BotCommand("similar", "Ähnliche Links"),
-    BotCommand("edit", "Link bearbeiten"),
-    BotCommand("delete", "Link löschen"),
-    BotCommand("export", "Sammlung exportieren"),
-    BotCommand("settings", "Konfiguration anzeigen"),
-    BotCommand("help", "Alle Befehle"),
+    BotCommand("search", "Full-text search"),
+    BotCommand("tag", "Links with a tag"),
+    BotCommand("tags", "All tags with counts"),
+    BotCommand("latest", "Latest links"),
+    BotCommand("today", "Saved today"),
+    BotCommand("week", "Last 7 days"),
+    BotCommand("month", "Last 30 days"),
+    BotCommand("stats", "Statistics"),
+    BotCommand("top_tags", "Top 10 tags"),
+    BotCommand("timeline", "Tag timeline"),
+    BotCommand("related", "Related tags"),
+    BotCommand("similar", "Similar links"),
+    BotCommand("edit", "Edit a link"),
+    BotCommand("delete", "Delete a link"),
+    BotCommand("export", "Export collection"),
+    BotCommand("settings", "Show config"),
+    BotCommand("help", "All commands"),
 ]
 
 
@@ -106,13 +106,19 @@ def _register_commands(application: Application, allowed) -> None:
         ("start", common.start),
         ("help", common.help_command),
         ("settings", common.settings_command),
-        ("suche", query.search_command),
+        ("search", query.search_command),
+        ("suche", query.search_command),  # legacy
         ("tag", query.tag_command),
         ("tags", query.tags_command),
-        ("neue", query.period_command),
-        ("heute", query.period_command),
-        ("woche", query.period_command),
-        ("monat", query.period_command),
+        ("latest", query.period_command),
+        ("new", query.period_command),
+        ("neue", query.period_command),  # legacy
+        ("today", query.period_command),
+        ("heute", query.period_command),  # legacy
+        ("week", query.period_command),
+        ("woche", query.period_command),  # legacy
+        ("month", query.period_command),
+        ("monat", query.period_command),  # legacy
         ("stats", stats.stats_command),
         ("top_tags", stats.top_tags_command),
         ("toptags", stats.top_tags_command),
