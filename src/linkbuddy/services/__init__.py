@@ -1,0 +1,1 @@
+"""Fachlogik ohne Telegram-Abhaengigkeit."""
