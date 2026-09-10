@@ -51,6 +51,7 @@ HELP_TEXT = f"""<b>{ic.BOOK} COMMANDS</b>
   /settings – current config
 
 <b>{ic.TIP} TIPS</b>
+  · Send <code>#tools</code> alone to browse that tag
   · Tags: #category/sub (e.g. #ai/evals)
   · Multiple tags: #ai/agents #tools
   · Use the <code>#ID</code> after each hit for /edit, /delete, /similar

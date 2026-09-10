@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 HINT = (
     "🤔 Da war kein Link drin.\n\n"
-    "Paste a URL (optional <code>#tags</code> + note), tap a bottom button, "
+    "Paste a URL, send <code>#tag</code>, tap a bottom button, "
     "or use /help."
 )
 
@@ -78,7 +78,24 @@ async def text_router(update: Update, context: BotContextTypes) -> None:
         await save.handle_new_link(update, context, text)
         return
 
+    only_tags = _message_is_only_hashtags(text)
+    if only_tags:
+        await query.show_tag(update, context, only_tags[0])
+        return
+
     await reply(update, HINT)
+
+
+def _message_is_only_hashtags(text: str) -> list[str] | None:
+    """Wenn die Nachricht nur aus #tags besteht, liefere deren Liste."""
+    from ...services.tags import extract_hashtags, strip_hashtags
+
+    tags = extract_hashtags(text)
+    if not tags:
+        return None
+    if strip_hashtags(text).strip():
+        return None
+    return tags
 
 
 async def _dispatch_menu_button(
