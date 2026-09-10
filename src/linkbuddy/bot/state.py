@@ -64,7 +64,15 @@ class ListView:
 class Pending:
     """Worauf der Bot gerade eine Texteingabe erwartet."""
 
-    kind: Literal["draft_tags", "draft_note", "draft_url", "edit_tags", "edit_note"]
+    kind: Literal[
+        "draft_tags",
+        "draft_note",
+        "draft_url",
+        "edit_tags",
+        "edit_note",
+        "menu_search",
+        "menu_tag",
+    ]
     ref: str
 
 

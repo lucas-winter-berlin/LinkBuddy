@@ -1,8 +1,8 @@
-"""Inline-Tastaturen und das Schema der callback_data."""
+"""Inline-Tastaturen, Reply-Keyboard und callback_data-Schema."""
 
 from __future__ import annotations
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
 from .. import icons as ic
 
@@ -14,12 +14,50 @@ PAGE = "pg"
 TAGVIEW = "tv"
 NOOP = "noop"
 
+# Persistent reply-keyboard labels (exact match in the text router).
+BTN_LATEST = "Latest"
+BTN_TODAY = "Today"
+BTN_WEEK = "Week"
+BTN_MONTH = "Month"
+BTN_TAGS = "Tags"
+BTN_STATS = "Stats"
+BTN_SEARCH = "Search"
+BTN_EXPORT = "Export"
+BTN_HELP = "Help"
+BTN_SETTINGS = "Settings"
+
+
+def main_reply_keyboard() -> ReplyKeyboardMarkup:
+    """Handy-freundliche Dauer-Leiste statt Slash-Commands."""
+    return ReplyKeyboardMarkup(
+        [
+            [
+                KeyboardButton(BTN_LATEST),
+                KeyboardButton(BTN_TODAY),
+                KeyboardButton(BTN_WEEK),
+                KeyboardButton(BTN_MONTH),
+            ],
+            [
+                KeyboardButton(BTN_TAGS),
+                KeyboardButton(BTN_STATS),
+                KeyboardButton(BTN_SEARCH),
+            ],
+            [
+                KeyboardButton(BTN_EXPORT),
+                KeyboardButton(BTN_HELP),
+                KeyboardButton(BTN_SETTINGS),
+            ],
+        ],
+        resize_keyboard=True,
+        is_persistent=True,
+        input_field_placeholder="Paste a link or tap a button…",
+    )
+
 
 def _btn(text: str, *, icon: str | None = None, **kwargs) -> InlineKeyboardButton:
     """Button mit optionalem Custom-Emoji-Icon (Premium-Owner) und Text-Fallback."""
     emoji_id = ic.button_icon_id(icon) if icon else None
     if emoji_id:
-        # Icon sitzt links vom Label – kein Text-Praefix noetig.
         return InlineKeyboardButton(text, icon_custom_emoji_id=emoji_id, **kwargs)
     prefix = f"{ic.plain(icon)} " if icon else ""
     return InlineKeyboardButton(f"{prefix}{text}", **kwargs)

@@ -45,6 +45,8 @@ HELP_TEXT = f"""<b>{ic.BOOK} COMMANDS</b>
   /export [#tag] [format] – markdown | json | csv | notion
 
 <b>{ic.TIP} OTHER</b>
+  Bottom keyboard – tap Latest / Tags / Search / …
+  /menu – show the keyboard again
   /help – this overview
   /settings – current config
 
@@ -56,6 +58,8 @@ HELP_TEXT = f"""<b>{ic.BOOK} COMMANDS</b>
 
 
 async def start(update: Update, context: BotContextTypes) -> None:
+    from .. import keyboards as kb
+
     settings = app_context(context).settings
     uid = user_id_of(update)
 
@@ -68,14 +72,27 @@ async def start(update: Update, context: BotContextTypes) -> None:
         ]
     lines += [
         "Schick mir einfach einen Link – ich schlage Tags vor, du bestätigst.",
+        "Unten: Tasten für Latest / Tags / Search / …",
         "",
-        "/help zeigt alle Befehle.",
+        "/help zeigt alle Befehle · /menu zeigt die Tastatur erneut.",
     ]
-    await reply(update, "\n".join(lines))
+    await reply(update, "\n".join(lines), reply_markup=kb.main_reply_keyboard())
+
+
+async def menu_command(update: Update, context: BotContextTypes) -> None:
+    from .. import keyboards as kb
+
+    await reply(
+        update,
+        f"{ic.OK} Keyboard ready – tap a button or paste a link.",
+        reply_markup=kb.main_reply_keyboard(),
+    )
 
 
 async def help_command(update: Update, context: BotContextTypes) -> None:
-    await reply(update, HELP_TEXT)
+    from .. import keyboards as kb
+
+    await reply(update, HELP_TEXT, reply_markup=kb.main_reply_keyboard())
 
 
 async def settings_command(update: Update, context: BotContextTypes) -> None:

@@ -115,7 +115,16 @@ async def search_command(update: Update, context: BotContextTypes) -> None:
     if not keyword:
         await reply(update, "Usage: <code>/search &lt;keyword&gt;</code>")
         return
+    await search_with_keyword(update, context, keyword)
 
+
+async def search_with_keyword(
+    update: Update, context: BotContextTypes, keyword: str
+) -> None:
+    keyword = keyword.strip()
+    if not keyword:
+        await reply(update, "Usage: <code>/search &lt;keyword&gt;</code>")
+        return
     view = ListView(
         kind="search",
         argument=keyword,
@@ -132,17 +141,17 @@ async def search_command(update: Update, context: BotContextTypes) -> None:
 async def tag_command(update: Update, context: BotContextTypes) -> None:
     raw = " ".join(context.args or []).strip()
     if not raw:
-        await reply(update, "Nutzung: <code>/tag #kategorie</code> oder <code>/tags</code>")
+        await reply(update, "Usage: <code>/tag #category</code> or <code>/tags</code>")
         return
     try:
         tag = normalise_tag(raw)
     except InvalidTagError:
-        await reply(update, "! Ungültiges Tag-Format. Nutze: <code>#kategorie/unter</code>")
+        await reply(update, "! Invalid tag format. Use: <code>#category/sub</code>")
         return
-    await _show_tag(update, context, tag)
+    await show_tag(update, context, tag)
 
 
-async def _show_tag(update: Update, context: BotContextTypes, tag: str) -> None:
+async def show_tag(update: Update, context: BotContextTypes, tag: str) -> None:
     """Alle Links zu einem Tag als schlichte Bullet-Liste."""
     view = ListView(kind="tag", argument=tag, title=f"#{tag}")
     await _show_view(
@@ -197,8 +206,8 @@ async def tags_command(update: Update, context: BotContextTypes) -> None:
 async def period_command(update: Update, context: BotContextTypes) -> None:
     """Handles /latest, /today, /week, /month (plus legacy German aliases)."""
     message = update.effective_message
-    command = ""
-    if message and message.text:
+    command = context.user_data.pop("_menu_period_cmd", None)
+    if not command and message and message.text:
         command = message.text.split()[0].lstrip("/").split("@")[0].lower()
 
     period = {
@@ -211,7 +220,7 @@ async def period_command(update: Update, context: BotContextTypes) -> None:
         "woche": "woche",
         "month": "monat",
         "monat": "monat",
-    }.get(command, "all")
+    }.get(command or "", "all")
 
     page_size = app_context(context).settings.page_size
     if period == "all" and context.args:
@@ -259,4 +268,4 @@ async def tag_view_callback(update: Update, context: BotContextTypes) -> None:
     assert query is not None
     _, tag = query.data.split(":", 1)
     await query.answer()
-    await _show_tag(update, context, tag)
+    await show_tag(update, context, tag)

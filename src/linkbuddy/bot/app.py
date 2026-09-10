@@ -42,6 +42,7 @@ BOT_COMMANDS = [
     BotCommand("export", "Export collection"),
     BotCommand("settings", "Show config"),
     BotCommand("help", "All commands"),
+    BotCommand("menu", "Show reply keyboard"),
 ]
 
 
@@ -105,6 +106,7 @@ def _register_commands(application: Application, allowed) -> None:
     handlers = [
         ("start", common.start),
         ("help", common.help_command),
+        ("menu", common.menu_command),
         ("settings", common.settings_command),
         ("search", query.search_command),
         ("suche", query.search_command),  # legacy
