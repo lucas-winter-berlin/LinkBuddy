@@ -53,6 +53,11 @@ async def text_router(update: Update, context: BotContextTypes) -> None:
     pending = get_pending(context.user_data)
     has_url = bool(find_urls(text))
 
+    # Reply-keyboard taps always win over a stale pending prompt.
+    if await _dispatch_menu_button(update, context, text):
+        set_pending(context.user_data, None)
+        return
+
     if pending is not None:
         if pending.kind == "menu_search" and not has_url:
             set_pending(context.user_data, None)
@@ -70,9 +75,6 @@ async def text_router(update: Update, context: BotContextTypes) -> None:
                 await handler(update, context, pending.ref, text)
                 return
         set_pending(context.user_data, None)
-
-    if await _dispatch_menu_button(update, context, text):
-        return
 
     if has_url:
         await save.handle_new_link(update, context, text)
@@ -98,47 +100,94 @@ def _message_is_only_hashtags(text: str) -> list[str] | None:
     return tags
 
 
+def _normalize_menu_label(text: str) -> str:
+    """Strip VS16/ZWJ so emoji button labels match across clients."""
+    cleaned = (
+        text.strip()
+        .replace("\ufe0f", "")
+        .replace("\u200d", "")
+        .replace("\u00a0", " ")
+    )
+    return " ".join(cleaned.split())
+
+
+def _menu_action_key(text: str) -> str | None:
+    """Map a reply-keyboard tap to a stable action key (latest, tags, …)."""
+    label = _normalize_menu_label(text)
+    candidates = {
+        _normalize_menu_label(kb.BTN_LATEST): "latest",
+        _normalize_menu_label(kb.BTN_TODAY): "today",
+        _normalize_menu_label(kb.BTN_WEEK): "week",
+        _normalize_menu_label(kb.BTN_MONTH): "month",
+        _normalize_menu_label(kb.BTN_TAGS): "tags",
+        _normalize_menu_label(kb.BTN_STATS): "stats",
+        _normalize_menu_label(kb.BTN_SEARCH): "search",
+        _normalize_menu_label(kb.BTN_EXPORT): "export",
+        _normalize_menu_label(kb.BTN_HELP): "help",
+        _normalize_menu_label(kb.BTN_SETTINGS): "settings",
+    }
+    if label in candidates:
+        return candidates[label]
+    # Fallback: last English word (handles emoji variants we did not list).
+    word = label.split(" ")[-1].lower() if label else ""
+    aliases = {
+        "latest": "latest",
+        "today": "today",
+        "week": "week",
+        "month": "month",
+        "tags": "tags",
+        "stats": "stats",
+        "search": "search",
+        "export": "export",
+        "help": "help",
+        "settings": "settings",
+    }
+    return aliases.get(word)
+
+
 async def _dispatch_menu_button(
     update: Update, context: BotContextTypes, text: str
 ) -> bool:
-    """Mappt Reply-Keyboard-Labels auf bestehende Handler. True = erledigt."""
-    label = text.strip()
-    if label == kb.BTN_LATEST:
+    """Map reply-keyboard labels onto existing handlers. True = handled."""
+    action = _menu_action_key(text)
+    if action is None:
+        return False
+    if action == "latest":
         context.user_data["_menu_period_cmd"] = "latest"
         await query.period_command(update, context)
         return True
-    if label == kb.BTN_TODAY:
+    if action == "today":
         context.user_data["_menu_period_cmd"] = "today"
         await query.period_command(update, context)
         return True
-    if label == kb.BTN_WEEK:
+    if action == "week":
         context.user_data["_menu_period_cmd"] = "week"
         await query.period_command(update, context)
         return True
-    if label == kb.BTN_MONTH:
+    if action == "month":
         context.user_data["_menu_period_cmd"] = "month"
         await query.period_command(update, context)
         return True
-    if label == kb.BTN_TAGS:
+    if action == "tags":
         await query.tags_command(update, context)
         return True
-    if label == kb.BTN_STATS:
+    if action == "stats":
         await stats.stats_command(update, context)
         return True
-    if label == kb.BTN_SEARCH:
+    if action == "search":
         set_pending(context.user_data, Pending(kind="menu_search", ref=""))
         await reply(
             update,
             "🔍 Send a search keyword (or paste a link to save instead).",
         )
         return True
-    if label == kb.BTN_EXPORT:
+    if action == "export":
         await manage.export_command(update, context)
         return True
-    if label == kb.BTN_HELP:
+    if action == "help":
         await common.help_command(update, context)
         return True
-    if label == kb.BTN_SETTINGS:
+    if action == "settings":
         await common.settings_command(update, context)
         return True
     return False
